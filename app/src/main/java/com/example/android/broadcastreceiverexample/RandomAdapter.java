@@ -1,10 +1,6 @@
 package com.example.android.broadcastreceiverexample;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,11 +10,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.Objects;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnLongClick;
 
 public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomViewHolder> {
     private List<RandomItem> data;
@@ -44,12 +35,19 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomView
     }
 
     class RandomViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.number_tv)
         TextView numberTV;
 
         RandomViewHolder(@NonNull View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+            numberTV = itemView.findViewById(R.id.number_tv);
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    removeItem();
+                    return false;
+                }
+            });
         }
 
         void bind(RandomItem data) {
@@ -57,12 +55,10 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomView
             numberTV.setTextColor(data.getColor());
         }
 
-        @OnLongClick(R.id.random_list_item_layout)
-        boolean removeItem() {
+        void removeItem() {
             data.remove(getAdapterPosition());
             notifyDataSetChanged();
             LocalBroadcastManager.getInstance(itemView.getContext()).sendBroadcast(new Intent(MyFilters.ACTION_REMOVED_ITEM));
-            return false;
         }
     }
 }

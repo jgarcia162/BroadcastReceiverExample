@@ -9,10 +9,13 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,13 +32,12 @@ import butterknife.OnClick;
 
 import static com.example.android.broadcastreceiverexample.MyFilters.CUSTOM_INTENT_FILTER;
 
-public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener {
+public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener, View.OnClickListener {
     private static final String KEY_RANDOM_ITEMS_LIST = "random_items";
-    @BindView(R.id.textView)
     public TextView textView;
-    @BindView(R.id.total_tv)
     public TextView totalTV;
-    @BindView(R.id.recyclerView)
+    public Button registerButton, unregisterButton;
+    public FloatingActionButton addButton;
     public RecyclerView recyclerView;
     private BroadcastReceiver broadcastReceiver;
     private LocalBroadcastManager localBroadcastManager;
@@ -50,8 +52,15 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-
+        textView = findViewById(R.id.textView);
+        totalTV = findViewById(R.id.total_tv);
+        recyclerView = findViewById(R.id.recyclerView);
+        registerButton = findViewById(R.id.register_button);
+        unregisterButton = findViewById(R.id.unregister_button);
+        addButton = findViewById(R.id.add_button);
+        registerButton.setOnClickListener(this);
+        unregisterButton.setOnClickListener(this);
+        addButton.setOnClickListener(this);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         setUpMyBroadcastReceiver();
@@ -113,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     @Override
     public void addedItem() {
         textView.setText(R.string.add_item);
-        totalTV.setText(getString(R.string.total, data.size()));
     }
 
     @Override
@@ -132,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         }
     }
 
-    @OnClick(R.id.unregister_button)
     void unregisterMyReceiver() {
         try {
             localBroadcastManager.unregisterReceiver(broadcastReceiver);
@@ -143,17 +150,16 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         }
     }
 
-    @OnClick(R.id.register_button)
     void registerMyReceiver() {
         localBroadcastManager.registerReceiver(broadcastReceiver, customFilter);
         this.registerReceiver(broadcastReceiver, airplaneFilter);
         textView.setText(R.string.registered);
     }
 
-    @OnClick(R.id.add_button)
     void addNewRandomItem() {
         data.add(new RandomItem(getRandomNumber(), getRandomColor()));
         adapter.notifyDataSetChanged();
+        totalTV.setText(getString(R.string.total, data.size()));
         localBroadcastManager.sendBroadcast(new Intent(MyFilters.ACTION_ADDED_ITEM));
     }
 
@@ -171,5 +177,20 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(KEY_RANDOM_ITEMS_LIST, Parcels.wrap(data));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.register_button:
+                registerMyReceiver();
+                break;
+            case R.id.unregister_button:
+                unregisterMyReceiver();
+                break;
+            case R.id.add_button:
+                addNewRandomItem();
+                break;
+        }
     }
 }
