@@ -22,7 +22,6 @@ import butterknife.OnLongClick;
 
 public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomViewHolder> {
     private List<RandomItem> data;
-    private RandomListener listener;
 
     RandomAdapter(List<RandomItem> data) {
         this.data = data;
@@ -44,14 +43,6 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomView
         return data.size();
     }
 
-    void attachListener(RandomListener listener){
-        this.listener = listener;
-    }
-
-    void detachListener(){
-        listener = null;
-    }
-
     class RandomViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.number_tv)
         TextView numberTV;
@@ -70,14 +61,8 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomView
         boolean removeItem() {
             data.remove(getAdapterPosition());
             notifyDataSetChanged();
-            if(listener != null){
-                listener.itemDeleted();
-            }
+            LocalBroadcastManager.getInstance(itemView.getContext()).sendBroadcast(new Intent(MyFilters.ACTION_REMOVED_ITEM));
             return false;
         }
-    }
-
-    interface RandomListener{
-        void itemDeleted();
     }
 }

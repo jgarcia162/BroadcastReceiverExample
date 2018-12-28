@@ -11,4 +11,5 @@
     <string name="unregister_button">Unregister</string>
     <string name="error_unregister">Receiver Already Unregistered!</string>
     <string name="removed_item">Removed Item</string>
+    <string name="total">Total: %1$d</string>
 </resources>
