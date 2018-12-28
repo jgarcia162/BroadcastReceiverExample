@@ -11,13 +11,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 import static com.example.android.broadcastreceiverexample.MyFilters.CUSTOM_INTENT_FILTER;
 
-public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener, View.OnClickListener {
-    private TextView textView;
-    private Button addButton;
-    private Button stopButton;
-    private Button startButton;
+public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener {
+    @BindView(R.id.textView) public TextView textView;
     private BroadcastReceiver broadcastReceiver;
     private LocalBroadcastManager localBroadcastManager;
     private IntentFilter airplaneFilter;
@@ -27,14 +28,9 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textView = findViewById(R.id.textView);
-        addButton = findViewById(R.id.add_button);
-        stopButton = findViewById(R.id.stop_button);
-        startButton = findViewById(R.id.start_button);
-        textView.setOnClickListener(this);
-        addButton.setOnClickListener(this);
-        stopButton.setOnClickListener(this);
-        startButton.setOnClickListener(this);
+        ButterKnife.bind(this);
+        ButterKnife.setDebug(true);
+
         broadcastReceiver = new MyBroadcastReceiver(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
@@ -42,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         airplaneFilter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
 
         addFilter = new IntentFilter(CUSTOM_INTENT_FILTER);
-        addFilter.addAction(MyFilters.CUSTOM_ACTION);
+        addFilter.addAction(MyFilters.ACTION_ADDED_ITEM);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, addFilter);
         this.registerReceiver(broadcastReceiver, airplaneFilter);
@@ -58,18 +54,18 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         textView.setText(R.string.add_item);
     }
 
-    @Override
+    @OnClick({R.id.add_button, R.id.register_button, R.id.unregister_button})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.add_button:
-                localBroadcastManager.sendBroadcast(new Intent(MyFilters.CUSTOM_ACTION));
+                localBroadcastManager.sendBroadcast(new Intent(MyFilters.ACTION_ADDED_ITEM));
                 break;
-            case R.id.start_button:
+            case R.id.register_button:
                 localBroadcastManager.registerReceiver(broadcastReceiver, addFilter);
                 this.registerReceiver(broadcastReceiver, airplaneFilter);
                 textView.setText(R.string.registered);
                 break;
-            case R.id.stop_button:
+            case R.id.unregister_button:
                 try {
                     localBroadcastManager.unregisterReceiver(broadcastReceiver);
                     this.unregisterReceiver(broadcastReceiver);
