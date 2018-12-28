@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.parceler.Parcels;
 
@@ -28,11 +29,12 @@ import butterknife.OnClick;
 
 import static com.example.android.broadcastreceiverexample.MyFilters.CUSTOM_INTENT_FILTER;
 
-public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener, RandomAdapter.RandomListener {
+public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener {
     private static final String KEY_RANDOM_ITEMS_LIST = "random_items";
-    private static final String KEY_TEXTVIEW_TEXT = "textview_text";
     @BindView(R.id.textView)
     public TextView textView;
+    @BindView(R.id.total_tv)
+    public TextView totalTV;
     @BindView(R.id.recyclerView)
     public RecyclerView recyclerView;
     private BroadcastReceiver broadcastReceiver;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     private RandomAdapter adapter;
     private List<RandomItem> data = new ArrayList<>();
     private Random random = new Random();
+    private Vibrator vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,23 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        setUpMyBroadcastReceiver();
+
+        if (savedInstanceState != null) {
+            data = Parcels.unwrap(savedInstanceState.getParcelable(KEY_RANDOM_ITEMS_LIST));
+            totalTV.setText(getString(R.string.total, Objects.requireNonNull(data).size()));
+        } else {
+            createDummyData();
+            totalTV.setText(getString(R.string.total, data.size()));
+        }
+
+        adapter = new RandomAdapter(data);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void setUpMyBroadcastReceiver() {
         broadcastReceiver = new MyBroadcastReceiver(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
@@ -61,15 +81,6 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
 
         localBroadcastManager.registerReceiver(broadcastReceiver, customFilter);
         this.registerReceiver(broadcastReceiver, airplaneFilter);
-        if (savedInstanceState != null) {
-            data = Parcels.unwrap(savedInstanceState.getParcelable(KEY_RANDOM_ITEMS_LIST));
-            textView.setText(savedInstanceState.getString(KEY_TEXTVIEW_TEXT));
-        } else {
-            createDummyData();
-        }
-        adapter = new RandomAdapter(data);
-        adapter.attachListener(this);
-        recyclerView.setAdapter(adapter);
     }
 
     private void createDummyData() {
@@ -102,11 +113,23 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     @Override
     public void addedItem() {
         textView.setText(R.string.add_item);
+        totalTV.setText(getString(R.string.total, data.size()));
     }
 
     @Override
     public void removedItem() {
+        vibrate();
         textView.setText(R.string.removed_item);
+        totalTV.setText(getString(R.string.total, data.size()));
+        Toast.makeText(this, R.string.removed_item, Toast.LENGTH_SHORT).show();
+    }
+
+    private void vibrate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Objects.requireNonNull(vibrator).vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            Objects.requireNonNull(vibrator).vibrate(200);
+        }
     }
 
     @OnClick(R.id.unregister_button)
@@ -137,28 +160,16 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(broadcastReceiver);
+        try {
+            unregisterReceiver(broadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(KEY_RANDOM_ITEMS_LIST, Parcels.wrap(data));
-        outState.putString(KEY_TEXTVIEW_TEXT, textView.getText().toString());
-    }
-
-    @Override
-    public void itemDeleted() {
-        vibrate();
-        localBroadcastManager.sendBroadcast(new Intent(MyFilters.ACTION_REMOVED_ITEM));
-    }
-
-    private void vibrate() {
-        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Objects.requireNonNull(vibrator).vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            Objects.requireNonNull(vibrator).vibrate(200);
-        }
     }
 }
