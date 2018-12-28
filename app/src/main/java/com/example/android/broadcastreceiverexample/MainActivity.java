@@ -3,13 +3,18 @@ package com.example.android.broadcastreceiverexample;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,17 +24,20 @@ import static com.example.android.broadcastreceiverexample.MyFilters.CUSTOM_INTE
 
 public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener {
     @BindView(R.id.textView) public TextView textView;
+    @BindView(R.id.recyclerView) public RecyclerView recyclerView;
     private BroadcastReceiver broadcastReceiver;
     private LocalBroadcastManager localBroadcastManager;
     private IntentFilter airplaneFilter;
     private IntentFilter addFilter;
+    private RandomAdapter adapter;
+    private List<RandomItem> data = new ArrayList<>();
+    private Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        ButterKnife.setDebug(true);
 
         broadcastReceiver = new MyBroadcastReceiver(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
@@ -42,6 +50,36 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, addFilter);
         this.registerReceiver(broadcastReceiver, airplaneFilter);
+
+        createDummyData();
+        adapter = new RandomAdapter(data);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void createDummyData() {
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+    }
+
+    private int getRandomNumber() {
+        return random.nextInt(999) + 1;
+    }
+
+    private int getRandomColor() {
+        int r = random.nextInt(254)+1;
+        int g = random.nextInt(254)+1;
+        int b = random.nextInt(254)+1;
+
+        return Color.rgb(r,g,b);
     }
 
     @Override
@@ -54,12 +92,9 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
         textView.setText(R.string.add_item);
     }
 
-    @OnClick({R.id.add_button, R.id.register_button, R.id.unregister_button})
+    @OnClick({R.id.register_button, R.id.unregister_button})
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.add_button:
-                localBroadcastManager.sendBroadcast(new Intent(MyFilters.ACTION_ADDED_ITEM));
-                break;
             case R.id.register_button:
                 localBroadcastManager.registerReceiver(broadcastReceiver, addFilter);
                 this.registerReceiver(broadcastReceiver, airplaneFilter);
@@ -75,6 +110,13 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
                 }
                 break;
         }
+    }
+
+    @OnClick(R.id.add_button)
+    void addNewRandomItem() {
+        data.add(new RandomItem(getRandomNumber(), getRandomColor()));
+        adapter.notifyDataSetChanged();
+        localBroadcastManager.sendBroadcast(new Intent(MyFilters.ACTION_ADDED_ITEM));
     }
 
     @Override
