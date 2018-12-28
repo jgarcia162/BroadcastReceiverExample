@@ -1,8 +1,15 @@
 package com.example.android.broadcastreceiverexample;
 
+import org.parceler.Parcel;
+
+@Parcel
 class RandomItem {
-    private int number;
-    private int color;
+    int number;
+    int color;
+
+
+    public RandomItem() {
+    }
 
     public RandomItem(int number, int color) {
         this.number = number;
@@ -16,4 +23,6 @@ class RandomItem {
     public int getColor() {
         return color;
     }
+
+
 }

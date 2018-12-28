@@ -12,6 +12,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,8 +25,11 @@ import butterknife.OnClick;
 import static com.example.android.broadcastreceiverexample.MyFilters.CUSTOM_INTENT_FILTER;
 
 public class MainActivity extends AppCompatActivity implements MyBroadcastReceiver.BroadcastListener {
-    @BindView(R.id.textView) public TextView textView;
-    @BindView(R.id.recyclerView) public RecyclerView recyclerView;
+    private static final String KEY_RANDOM_ITEMS_LIST = "random_items";
+    @BindView(R.id.textView)
+    public TextView textView;
+    @BindView(R.id.recyclerView)
+    public RecyclerView recyclerView;
     private BroadcastReceiver broadcastReceiver;
     private LocalBroadcastManager localBroadcastManager;
     private IntentFilter airplaneFilter;
@@ -50,8 +55,11 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, addFilter);
         this.registerReceiver(broadcastReceiver, airplaneFilter);
-
-        createDummyData();
+        if (savedInstanceState != null) {
+            data = Parcels.unwrap(savedInstanceState.getParcelable(KEY_RANDOM_ITEMS_LIST));
+        } else {
+            createDummyData();
+        }
         adapter = new RandomAdapter(data);
         recyclerView.setAdapter(adapter);
     }
@@ -75,11 +83,7 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     }
 
     private int getRandomColor() {
-        int r = random.nextInt(254)+1;
-        int g = random.nextInt(254)+1;
-        int b = random.nextInt(254)+1;
-
-        return Color.rgb(r,g,b);
+        return Color.rgb(random.nextInt(254) + 1, random.nextInt(254) + 1, random.nextInt(254) + 1);
     }
 
     @Override
@@ -123,5 +127,11 @@ public class MainActivity extends AppCompatActivity implements MyBroadcastReceiv
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_RANDOM_ITEMS_LIST, Parcels.wrap(data));
     }
 }
