@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
-    tools:context=".MainActivity" >
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -37,10 +36,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/unregister_button"
+            app:layout_constraintBottom_toTopOf="@id/divider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/register_button"
-            app:layout_constraintBottom_toTopOf="@id/divider"
-            app:layout_constraintTop_toBottomOf="@id/textView"/>
+            app:layout_constraintTop_toBottomOf="@id/textView" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -55,7 +54,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider"
-            tools:listitem="@layout/random_list_item"/>
+            tools:listitem="@layout/random_list_item" />
 
         <View
             android:id="@+id/divider"
@@ -80,10 +79,10 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:clickable="true"
+        android:tint="@android:color/white"
         app:layout_anchor="@+id/constraintLayout"
         app:layout_anchorGravity="right|bottom"
         app:layout_constraintEnd_toEndOf="@+id/recyclerView"
         app:srcCompat="@android:drawable/ic_input_add"
-        android:tint="@android:color/white"
         tools:layout_editor_absoluteY="464dp" />
 </android.support.design.widget.CoordinatorLayout>

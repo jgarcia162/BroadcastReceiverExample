@@ -10,4 +10,5 @@
     <string name="registered">Receiver Registered</string>
     <string name="unregister_button">Unregister</string>
     <string name="error_unregister">Receiver Already Unregistered!</string>
+    <string name="removed_item">Removed Item</string>
 </resources>

@@ -1,22 +1,30 @@
 package com.example.android.broadcastreceiverexample;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnLongClick;
 
 public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomViewHolder> {
-    private List<RandomItem> data = new ArrayList<>();
+    private List<RandomItem> data;
+    private RandomListener listener;
 
-    public RandomAdapter(List<RandomItem> data) {
+    RandomAdapter(List<RandomItem> data) {
         this.data = data;
     }
 
@@ -36,16 +44,40 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.RandomView
         return data.size();
     }
 
-    class RandomViewHolder extends RecyclerView.ViewHolder{
-        @BindView(R.id.number_tv) TextView numberTV;
+    void attachListener(RandomListener listener){
+        this.listener = listener;
+    }
+
+    void detachListener(){
+        listener = null;
+    }
+
+    class RandomViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.number_tv)
+        TextView numberTV;
+
         RandomViewHolder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
 
-        void bind(RandomItem data){
+        void bind(RandomItem data) {
             numberTV.setText(String.valueOf(data.getNumber()));
             numberTV.setTextColor(data.getColor());
         }
+
+        @OnLongClick(R.id.random_list_item_layout)
+        boolean removeItem() {
+            data.remove(getAdapterPosition());
+            notifyDataSetChanged();
+            if(listener != null){
+                listener.itemDeleted();
+            }
+            return false;
+        }
+    }
+
+    interface RandomListener{
+        void itemDeleted();
     }
 }
